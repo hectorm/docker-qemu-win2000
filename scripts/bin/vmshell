@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -eu
+
+# Wait until bind shell is available
+until printf 'exit\n' | nc 127.0.0.1 5151 >/dev/null 2>&1; do sleep 1; done; sleep 1
+
+if [ -t 0 ] || [ -t 1 ]; then
+	exec rlwrap nc 127.0.0.1 5151
+else
+	exec nc 127.0.0.1 5151
+fi

@@ -1,0 +1,50 @@
+;SetupMgrTag
+
+[Data]
+	AutoPartition = 1
+	MsDosInitiated = 0
+	UseBIOSToBoot = 1
+	UnattendedInstall = Yes
+
+[Unattended]
+	UnattendMode = FullUnattended
+	Repartition = Yes
+	OemSkipEula = Yes
+	OemPreinstall = No
+	TargetPath = \WINNT
+
+[GuiUnattended]
+	AdminPassword = password
+	AutoLogon = Yes
+	OEMSkipRegional = 1
+	OemSkipWelcome = 1
+	TimeZone = 090
+
+[GuiRunOnce]
+	"D:\I386\WINNT-GUIRUNONCE.BAT"
+
+[UserData]
+	ComputerName = WIN2000
+	FullName = Administrator
+	OrgName = Org
+
+[Identification]
+	JoinWorkgroup = WORKGROUP
+
+[Display]
+	BitsPerPel = 8
+	XResolution = 1024
+	YResolution = 768
+
+[Networking]
+	InstallDefaultComponents = Yes
+
+[LicenseFilePrintData]
+	AutoMode = PerSeat
+
+[TerminalServices]
+	ApplicationServer = 0
+	PermissionsSetting = 0
+
+[Components]
+	TSEnable = On

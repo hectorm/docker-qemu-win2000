@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+set --
+set -- "$@" -smp "${VM_CPU:?}" -m "${VM_RAM:?}"
+set -- "$@" -serial stdio -monitor unix:/run/qemu-monitor,server,nowait -device cirrus-vga -display vnc=:0
+set -- "$@" -device rtl8139,netdev=n0 -netdev user,id=n0,"${VM_NET_GUESTFWD_OPTIONS?}","${VM_NET_HOSTFWD_OPTIONS?}","${VM_NET_EXTRA_OPTIONS?}"
+set -- "$@" -drive file=/var/lib/qemu/win2000.qcow2,index=0,media=disk,format=qcow2
+set -- "$@" -usb -device usb-tablet -k "${VM_KEYBOARD:?}"
+
+if [ "${VM_KVM:?}" = true ] && [ -c /dev/kvm ]; then
+	set -- "$@" -accel kvm
+else
+	set -- "$@" -accel tcg
+fi
+
+cd /var/lib/qemu/
+exec 2>&1
+exec /usr/bin/qemu-system-x86_64 "$@"

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -eu
+
+printf '%s\n' 'system_powerdown' | nc -U /run/qemu-monitor
