@@ -135,10 +135,10 @@ FROM base AS test
 
 RUN if [ "$(uname -m)" = 'x86_64' ]; then \
 		container-init & \
-		touch /mnt/in || exit 1; \
+		printf '%s\n' 'The quick brown fox jumps over the lazy dog' > /mnt/in || exit 1; \
 		printf '%s\n' '@echo off & for /l %n in () do if exist Z:\in exit' | timeout 900 vmshell || exit 1; \
-		printf '%s\n' '@echo off & copy NUL Z:\out & exit' | timeout 120 vmshell || exit 1; \
-		[ -f /mnt/out ] || exit 1; \
+		printf '%s\n' '@echo off & copy Z:\in Z:\out & exit' | timeout 120 vmshell || exit 1; \
+		cmp -s /mnt/in /mnt/out || exit 1; \
 	fi
 
 ##################################################
