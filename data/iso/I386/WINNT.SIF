@@ -18,7 +18,7 @@
 	AutoLogon = Yes
 	OEMSkipRegional = 1
 	OemSkipWelcome = 1
-	TimeZone = 090
+	TimeZone = 085
 
 [GuiRunOnce]
 	"D:\I386\WINNT-GUIRUNONCE.BAT"
