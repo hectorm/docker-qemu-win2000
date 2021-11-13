@@ -45,7 +45,7 @@ RUN printf '%s' "${NETCAT_TARBALL_CHECKSUM:?}  /tmp/netcat.tgz" | sha256sum -c
 RUN mkdir /tmp/netcat/ && tar -xzf /tmp/netcat.tgz --strip-components=1 -C /tmp/netcat/
 RUN make -C /tmp/netcat/ build
 
-# Download Windows 2000 Advanced Server ISO
+# Download and install Windows 2000 Advanced Server
 # Source: https://winworldpc.com/product/windows-nt-2000/final
 ARG WIN2000_ISO_URL=https://winworldpc.com/download/413dc39c-e280-9918-c39a-11c3a4e284a2/from/c3ae6ee2-8099-713d-3411-c3a6e280947e
 ARG WIN2000_ISO_CHECKSUM=d0a7709f387376d64cd6f20a35c4a7ba2e4cb5f46a0a4fbd14209b4dc7a48282

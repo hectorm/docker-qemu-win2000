@@ -41,5 +41,8 @@ copy "D:\VALUEADD\3RDPARTY\nc.exe" "%SystemRoot%\system32\nc.exe"
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v ConnectionType /t REG_DWORD /d 1 /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v UserName /t REG_SZ /d "" /f
 
+:: Disable server configuration wizard
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Setup\Welcome" /v srvwiz /t REG_DWORD /d 0 /f
+
 :: Shutdown machine
 "%SystemRoot%\system32\tsshutdn.exe" 0 /delay:0 /powerdown
