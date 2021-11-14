@@ -60,7 +60,7 @@ RUN sed -ri 's/^(Pid=[0-9]+)[0-9]{3}/\1270/' /tmp/win2000/I386/SETUPP.INI
 RUN mkisofs -no-emul-boot -iso-level 4 -eltorito-boot '[BOOT]/Boot-NoEmul.img' -o /tmp/win2000.iso /tmp/win2000/ \
 	&& qemu-img create -f qcow2 /tmp/win2000.qcow2 128G \
 	&& timeout 5400 qemu-system-x86_64 \
-		-accel tcg -smp 2 -m 512M \
+		-machine pc -smp 2 -m 512M -accel tcg \
 		-serial stdio -device cirrus-vga -display none \
 		-device rtl8139,netdev=n0 -netdev user,id=n0,restrict=on \
 		-drive file=/tmp/win2000.qcow2,index=0,media=disk,format=qcow2 \

@@ -3,7 +3,7 @@
 set -eu
 
 set --
-set -- "$@" -smp "${VM_CPU:?}" -m "${VM_RAM:?}"
+set -- "$@" -machine pc -smp "${VM_CPU:?}" -m "${VM_RAM:?}"
 set -- "$@" -serial stdio -monitor unix:/run/qemu-monitor,server,nowait -device cirrus-vga -display vnc=:0
 set -- "$@" -device rtl8139,netdev=n0 -netdev user,id=n0,"${VM_NET_GUESTFWD_OPTIONS?}","${VM_NET_HOSTFWD_OPTIONS?}","${VM_NET_EXTRA_OPTIONS?}"
 set -- "$@" -drive file=/var/lib/qemu/image/win2000.qcow2,index=0,media=disk,format=qcow2
