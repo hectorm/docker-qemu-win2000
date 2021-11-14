@@ -108,7 +108,7 @@ COPY --from=build --chown=root:root /tmp/novnc/ /opt/novnc/
 COPY --from=build --chown=root:root /tmp/websockify/ /opt/novnc/utils/websockify/
 
 # Copy Windows 2000 disk
-COPY --from=build --chown=root:root /tmp/win2000.qcow2 /var/lib/qemu/win2000.qcow2
+COPY --from=build --chown=root:root /tmp/win2000.qcow2 /var/lib/qemu/image/win2000.qcow2
 
 # Copy Samba config
 COPY --chown=root:root ./config/samba/ /etc/samba/
