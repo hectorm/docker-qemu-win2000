@@ -10,7 +10,7 @@ set -- "$@" -drive file=/var/lib/qemu/image/win2000.qcow2,index=0,media=disk,for
 set -- "$@" -usb -device usb-tablet -k "${VM_KEYBOARD:?}"
 
 if [ "${VM_KVM:?}" = true ] && [ -c /dev/kvm ]; then
-	set -- "$@" -accel kvm
+	set -- "$@" -accel kvm -cpu host
 else
 	set -- "$@" -accel tcg
 fi
