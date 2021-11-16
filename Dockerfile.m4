@@ -37,7 +37,15 @@ RUN curl -Lo /tmp/websockify.tgz "${WEBSOCKIFY_TARBALL_URL:?}"
 RUN printf '%s' "${WEBSOCKIFY_TARBALL_CHECKSUM:?}  /tmp/websockify.tgz" | sha256sum -c
 RUN mkdir /tmp/websockify/ && tar -xzf /tmp/websockify.tgz --strip-components=1 -C /tmp/websockify/
 
-# Download and build Netcat for Windows
+# Download and build srvany-ng
+ARG SRVANY_NG_TARBALL_URL=https://github.com/hectorm/srvany-ng/archive/refs/tags/v1.0.tar.gz
+ARG SRVANY_NG_TARBALL_CHECKSUM=62d4c85d5dbef86d57bf5d21ff913bce81b821735df293968e1706f85096c8b0
+RUN curl -Lo /tmp/srvany-ng.tgz "${SRVANY_NG_TARBALL_URL:?}"
+RUN printf '%s' "${SRVANY_NG_TARBALL_CHECKSUM:?}  /tmp/srvany-ng.tgz" | sha256sum -c
+RUN mkdir /tmp/srvany-ng/ && tar -xzf /tmp/srvany-ng.tgz --strip-components=1 -C /tmp/srvany-ng/
+RUN make -C /tmp/srvany-ng/ build
+
+# Download and build Netcat
 ARG NETCAT_TARBALL_URL=https://github.com/hectorm/netcat/archive/refs/tags/v1.14.tar.gz
 ARG NETCAT_TARBALL_CHECKSUM=3cf3235a9561e456c97e43c69318f680fd86ab886324992f5655f97e846540dc
 RUN curl -Lo /tmp/netcat.tgz "${NETCAT_TARBALL_URL:?}"
@@ -55,7 +63,8 @@ RUN 7z e /tmp/win2000.7z -so '*/*.ISO' > /tmp/win2000.iso \
 	&& 7z x /tmp/win2000.iso -o/tmp/win2000/ \
 	&& rm -f /tmp/win2000.iso
 COPY --chown=root:root ./data/iso/ /tmp/win2000/
-RUN cp /tmp/netcat/nc.exe /tmp/win2000/VALUEADD/3RDPARTY/nc.exe
+RUN install -D /tmp/srvany-ng/srvany-ng.exe /tmp/win2000/VALUEADD/3RDPARTY/srvany-ng.exe
+RUN install -D /tmp/netcat/nc.exe /tmp/win2000/VALUEADD/3RDPARTY/nc.exe
 RUN sed -ri 's/^(Pid=[0-9]+)[0-9]{3}/\1270/' /tmp/win2000/I386/SETUPP.INI
 RUN mkisofs -no-emul-boot -iso-level 4 -eltorito-boot '[BOOT]/Boot-NoEmul.img' -o /tmp/win2000.iso /tmp/win2000/ \
 	&& qemu-img create -f qcow2 /tmp/win2000.qcow2 128G \
