@@ -70,11 +70,12 @@ RUN mkisofs -no-emul-boot -iso-level 4 -eltorito-boot '[BOOT]/Boot-NoEmul.img' -
 	&& qemu-img create -f qcow2 /tmp/win2000.qcow2 128G \
 	&& timeout 5400 qemu-system-x86_64 \
 		-machine pc -smp 2 -m 512M -accel tcg \
-		-serial stdio -device cirrus-vga -display none \
+		-device cirrus-vga -display none -serial stdio \
 		-device rtl8139,netdev=n0 -netdev user,id=n0,restrict=on \
-		-drive file=/tmp/win2000.qcow2,index=0,media=disk,format=qcow2 \
-		-drive file=/tmp/win2000.iso,index=2,media=cdrom,format=raw \
-		-boot order=cd,menu=off -usb -device usb-tablet
+		-device ide-hd,bus=ide.0,drive=c0 -blockdev driver=qcow2,node-name=c0,file.driver=file,file.filename=/tmp/win2000.qcow2 \
+		-device ide-cd,bus=ide.1,drive=d0 -blockdev driver=raw,node-name=d0,file.driver=file,file.filename=/tmp/win2000.iso,read-only=on \
+		-boot order=cd,menu=off \
+		-usb -device usb-tablet
 
 ##################################################
 ## "base" stage
@@ -117,7 +118,7 @@ COPY --from=build --chown=root:root /tmp/novnc/ /opt/novnc/
 COPY --from=build --chown=root:root /tmp/websockify/ /opt/novnc/utils/websockify/
 
 # Copy Windows 2000 disk
-COPY --from=build --chown=root:root /tmp/win2000.qcow2 /var/lib/qemu/image/win2000.qcow2
+COPY --from=build --chown=root:root /tmp/win2000.qcow2 /var/lib/qemu/disk/win2000.qcow2
 
 # Copy Samba config
 COPY --chown=root:root ./config/samba/ /etc/samba/
