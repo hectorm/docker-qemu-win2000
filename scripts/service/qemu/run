@@ -6,7 +6,7 @@ set --
 set -- "$@" -machine pc -smp "${VM_CPU:?}" -m "${VM_RAM:?}"
 set -- "$@" -device cirrus-vga -display vnc=:0 -serial stdio -monitor unix:/run/qemu-monitor,server,nowait
 set -- "$@" -device rtl8139,netdev=n0 -netdev user,id=n0,"${VM_NET_GUESTFWD_OPTIONS?}","${VM_NET_HOSTFWD_OPTIONS?}","${VM_NET_EXTRA_OPTIONS?}"
-set -- "$@" -device ide-hd,bus=ide.0,drive=c0 -blockdev driver=qcow2,node-name=c0,file.driver=file,file.filename=/var/lib/qemu/disk/win2000.qcow2
+set -- "$@" -device ide-hd,id=disk0,bus=ide.0,drive=disk0 -blockdev driver=qcow2,node-name=disk0,file.driver=file,file.filename=/var/lib/qemu/disk/win2000.qcow2
 set -- "$@" -usb -device usb-tablet
 set -- "$@" -k "${VM_KEYBOARD:?}"
 
@@ -19,14 +19,14 @@ fi
 cd_i=0
 for cd in /var/lib/qemu/cd/*; do
 	[ -f "${cd:?}" ] || continue
-	set -- "$@" -device ide-cd,bus=ide.1,drive=d"${cd_i:?}" -blockdev driver=raw,node-name=d"${cd_i:?}",file.driver=file,file.filename="${cd:?}",read-only=on
+	set -- "$@" -device ide-cd,id=cd"${cd_i:?}",bus=ide.1,drive=cd"${cd_i:?}" -blockdev driver=raw,node-name=cd"${cd_i:?}",file.driver=file,file.filename="${cd:?}",read-only=on
 	cd_i="$((cd_i + 1))"
 done
 
 floppy_i=0
 for floppy in /var/lib/qemu/floppy/*; do
 	[ -f "${floppy:?}" ] || continue
-	set -- "$@" -device floppy,bus=floppy-bus.0,drive=a"${floppy_i:?}" -blockdev driver=raw,node-name=a"${floppy_i:?}",file.driver=file,file.filename="${floppy:?}",read-only=on
+	set -- "$@" -device floppy,id=floppy"${floppy_i:?}",bus=floppy-bus.0,drive=floppy"${floppy_i:?}" -blockdev driver=raw,node-name=floppy"${floppy_i:?}",file.driver=file,file.filename="${floppy:?}",read-only=on
 	floppy_i="$((floppy_i + 1))"
 done
 
