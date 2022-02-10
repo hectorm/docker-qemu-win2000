@@ -1,0 +1,26 @@
+name: 'Trigger rebuild of latest release'
+
+on:
+  schedule:
+    - cron: '20 04 * * 1'
+  workflow_dispatch:
+
+jobs:
+
+  trigger-rebuild:
+    name: 'Trigger rebuild'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'REST API call'
+        run: |
+          curl -fsS --proto '=https' --tlsv1.3 \
+            --url 'https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci.yml/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.PERSONAL_GITHUB_TOKEN }}' \
+            --header 'Accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data "$(curl -fsS --proto '=https' --tlsv1.3 \
+              --url 'https://api.github.com/repos/${{ github.repository }}/releases/latest' \
+              --header 'Authorization: Bearer ${{ secrets.PERSONAL_GITHUB_TOKEN }}' \
+              --header 'Accept: application/vnd.github.v3+json' \
+              --header 'Content-Type: application/json' \
+                | jq -rc '{ ref: .tag_name }')"
