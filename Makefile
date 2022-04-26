@@ -236,7 +236,7 @@ version:
 		'$(GIT)' commit --allow-empty -m "$${NEW_IMAGE_VERSION:?}"; \
 		'$(GIT)' tag -a "$${NEW_IMAGE_VERSION:?}" -m "$${NEW_IMAGE_VERSION:?}"; \
 	else \
-		>&2 printf 'Malformed version string: %s\n' '$${LATEST_IMAGE_VERSION:?}'; \
+		>&2 printf 'Malformed version string: %s\n' "$${LATEST_IMAGE_VERSION:?}"; \
 		exit 1; \
 	fi
 
