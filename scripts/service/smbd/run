@@ -4,4 +4,4 @@ set -eu
 
 cd /run/samba/
 exec 2>&1
-exec /usr/sbin/smbd --foreground --debug-stdout --debuglevel=3
+exec /usr/sbin/smbd --foreground --log-stdout --debuglevel=3
