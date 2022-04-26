@@ -6,7 +6,7 @@ export LC_ALL=C
 DOCKER=$(command -v docker 2>/dev/null)
 
 IMAGE_REGISTRY=docker.io
-IMAGE_NAMESPACE=hectormolinero
+IMAGE_NAMESPACE=hectorm
 IMAGE_PROJECT=qemu-win2000
 IMAGE_TAG=latest
 IMAGE_NAME=${IMAGE_REGISTRY:?}/${IMAGE_NAMESPACE:?}/${IMAGE_PROJECT:?}:${IMAGE_TAG:?}

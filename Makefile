@@ -11,10 +11,12 @@ DISTDIR := ./dist
 DOCKERFILE_TEMPLATE := ./Dockerfile.m4
 
 IMAGE_REGISTRY := docker.io
-IMAGE_NAMESPACE := hectormolinero
+IMAGE_NAMESPACE := hectorm
 IMAGE_PROJECT := qemu-win2000
 IMAGE_NAME := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE_PROJECT)
-IMAGE_VERSION := $(shell '$(GIT)' describe --abbrev=0 2>/dev/null || printf 'v0')
+IMAGE_GIT_TAG := $(shell '$(GIT)' tag -l --contains HEAD 2>/dev/null)
+IMAGE_GIT_SHA := $(shell '$(GIT)' rev-parse HEAD 2>/dev/null)
+IMAGE_VERSION := $(if $(IMAGE_GIT_TAG),$(IMAGE_GIT_TAG),$(if $(IMAGE_GIT_SHA),$(IMAGE_GIT_SHA),nil))
 
 IMAGE_BUILD_OPTS :=
 
@@ -107,7 +109,7 @@ $(IMAGE_ARM32V7_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 ##################################################
 
 define save_image
-	'$(DOCKER)' save '$(1)' | zstd -T0 -19 > '$(2)'
+	'$(DOCKER)' save '$(1)' | zstd -T0 > '$(2)'
 endef
 
 .PHONY: save-native-image
@@ -220,7 +222,7 @@ push-cross-manifest:
 
 .PHONY: binfmt-register
 binfmt-register:
-	'$(DOCKER)' run --rm --privileged docker.io/hectormolinero/qemu-user-static:latest --reset
+	'$(DOCKER)' run --rm --privileged docker.io/hectorm/qemu-user-static:latest --reset
 
 ##################################################
 ## "version" target
@@ -228,12 +230,13 @@ binfmt-register:
 
 .PHONY: version
 version:
-	@if printf '%s' '$(IMAGE_VERSION)' | grep -q '^v[0-9]\{1,\}$$'; then \
-		NEW_IMAGE_VERSION=$$(awk -v 'v=$(IMAGE_VERSION)' 'BEGIN {printf "v%.0f", substr(v,2)+1}'); \
+	@LATEST_IMAGE_VERSION=$$('$(GIT)' describe --abbrev=0 2>/dev/null || printf 'v0'); \
+	if printf '%s' "$${LATEST_IMAGE_VERSION:?}" | grep -q '^v[0-9]\{1,\}$$'; then \
+		NEW_IMAGE_VERSION=$$(awk -v v="$${LATEST_IMAGE_VERSION:?}" 'BEGIN {printf("v%.0f", substr(v,2)+1)}'); \
 		'$(GIT)' commit --allow-empty -m "$${NEW_IMAGE_VERSION:?}"; \
 		'$(GIT)' tag -a "$${NEW_IMAGE_VERSION:?}" -m "$${NEW_IMAGE_VERSION:?}"; \
 	else \
-		>&2 printf 'Malformed version string: %s\n' '$(IMAGE_VERSION)'; \
+		>&2 printf 'Malformed version string: %s\n' '$${LATEST_IMAGE_VERSION:?}'; \
 		exit 1; \
 	fi
 

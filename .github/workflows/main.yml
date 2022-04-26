@@ -1,0 +1,110 @@
+name: 'Main'
+
+on:
+  push:
+    tags: ['*']
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: 'Build ${{ matrix.arch }} image'
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+    strategy:
+      matrix:
+        arch: ['native', 'amd64', 'arm64v8', 'arm32v7']
+    steps:
+      - name: 'Checkout project'
+        uses: 'actions/checkout@v3'
+      - name: 'Register binfmt entries'
+        if: "matrix.arch != 'native'"
+        run: |
+          make binfmt-register
+      - name: 'Build and save image'
+        run: |
+          make IMAGE_BUILD_OPTS="--pull" "build-${{ matrix.arch }}-image" "save-${{ matrix.arch }}-image"
+      - name: 'Upload artifacts'
+        if: "startsWith(github.ref, 'refs/tags/v')"
+        uses: 'actions/upload-artifact@v3'
+        with:
+          name: 'dist-${{ matrix.arch }}'
+          path: './dist/'
+          retention-days: 1
+
+  push:
+    name: 'Push ${{ matrix.arch }} image'
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: ['build']
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+    strategy:
+      matrix:
+        arch: ['amd64', 'arm64v8', 'arm32v7']
+    steps:
+      - name: 'Checkout project'
+        uses: 'actions/checkout@v3'
+      - name: 'Download artifacts'
+        uses: 'actions/download-artifact@v3'
+        with:
+          name: 'dist-${{ matrix.arch }}'
+          path: './dist/'
+      - name: 'Login to Docker Hub'
+        uses: 'docker/login-action@v1'
+        with:
+          registry: 'docker.io'
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_TOKEN }}'
+      - name: 'Load and push image'
+        run: |
+          make "load-${{ matrix.arch }}-image" "push-${{ matrix.arch }}-image"
+
+  push-manifest:
+    name: 'Push manifest'
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: ['push']
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+    steps:
+      - name: 'Checkout project'
+        uses: 'actions/checkout@v3'
+      - name: 'Login to Docker Hub'
+        uses: 'docker/login-action@v1'
+        with:
+          registry: 'docker.io'
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_TOKEN }}'
+      - name: 'Push manifest'
+        run: |
+          make push-cross-manifest
+
+  release-github:
+    name: 'Create GitHub release'
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: ['push-manifest']
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'write'
+    steps:
+      - name: 'Create release'
+        run: |
+          RELEASE_STATUS="$(curl -fs --proto '=https' --tlsv1.3 --globoff \
+            --url "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases/tags/${GITHUB_REF_NAME:?}" \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --write-out '%{http_code}' --output /dev/null ||:)"
+          if [ "${RELEASE_STATUS:?}" = '200' ]; then exit 0; fi
+          RELEASE_ID="$(curl -fsS --proto '=https' --tlsv1.3 --globoff \
+            --url "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases" \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data "$(jq -rn --arg tag "${GITHUB_REF_NAME:?}" '{"name": $tag, "tag_name": $tag, "generate_release_notes": true}')" | jq -r '.id')"
+          if [ -z "${RELEASE_ID-}" ] || [ "${RELEASE_ID:?}" = 'null' ]; then exit 1; fi
