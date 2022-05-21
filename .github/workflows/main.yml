@@ -8,6 +8,8 @@ on:
     branches: ['*']
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
 
   build:
