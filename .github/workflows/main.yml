@@ -44,7 +44,7 @@ jobs:
       contents: 'read'
     strategy:
       matrix:
-        arch: ['native', 'amd64', 'arm64v8', 'arm32v7']
+        arch: ['native', 'amd64', 'arm64v8']
     steps:
       - name: 'Checkout project'
         uses: 'actions/checkout@v3'
@@ -83,7 +83,7 @@ jobs:
       contents: 'read'
     strategy:
       matrix:
-        arch: ['amd64', 'arm64v8', 'arm32v7']
+        arch: ['amd64', 'arm64v8']
     steps:
       - name: 'Checkout project'
         uses: 'actions/checkout@v3'

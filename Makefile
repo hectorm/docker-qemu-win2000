@@ -26,8 +26,6 @@ IMAGE_AMD64_DOCKERFILE := $(DISTDIR)/Dockerfile.amd64
 IMAGE_AMD64_TARBALL := $(DISTDIR)/$(IMAGE_PROJECT).amd64.tzst
 IMAGE_ARM64V8_DOCKERFILE := $(DISTDIR)/Dockerfile.arm64v8
 IMAGE_ARM64V8_TARBALL := $(DISTDIR)/$(IMAGE_PROJECT).arm64v8.tzst
-IMAGE_ARM32V7_DOCKERFILE := $(DISTDIR)/Dockerfile.arm32v7
-IMAGE_ARM32V7_TARBALL := $(DISTDIR)/$(IMAGE_PROJECT).arm32v7.tzst
 
 export DOCKER_BUILDKIT := 1
 export BUILDKIT_PROGRESS := plain
@@ -57,7 +55,7 @@ $(IMAGE_NATIVE_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 		--file '$@' ./
 
 .PHONY: build-cross-images
-build-cross-images: build-amd64-image build-arm64v8-image build-arm32v7-image
+build-cross-images: build-amd64-image build-arm64v8-image
 
 .PHONY: build-amd64-image
 build-amd64-image: $(IMAGE_AMD64_DOCKERFILE)
@@ -89,21 +87,6 @@ $(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 		--tag '$(IMAGE_NAME):latest-arm64v8' \
 		--file '$@' ./
 
-.PHONY: build-arm32v7-image
-build-arm32v7-image: $(IMAGE_ARM32V7_DOCKERFILE)
-
-$(IMAGE_ARM32V7_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
-	mkdir -p '$(DISTDIR)'
-	'$(M4)' \
-		--prefix-builtins \
-		--define=CROSS_ARCH=arm32v7 \
-		--define=CROSS_QEMU=/usr/bin/qemu-arm-static \
-		'$(DOCKERFILE_TEMPLATE)' > '$@'
-	'$(DOCKER)' build $(IMAGE_BUILD_OPTS) \
-		--tag '$(IMAGE_NAME):$(IMAGE_VERSION)-arm32v7' \
-		--tag '$(IMAGE_NAME):latest-arm32v7' \
-		--file '$@' ./
-
 ##################################################
 ## "save-*" targets
 ##################################################
@@ -119,7 +102,7 @@ $(IMAGE_NATIVE_TARBALL): $(IMAGE_NATIVE_DOCKERFILE)
 	$(call save_image,$(IMAGE_NAME):$(IMAGE_VERSION),$@)
 
 .PHONY: save-cross-images
-save-cross-images: save-amd64-image save-arm64v8-image save-arm32v7-image
+save-cross-images: save-amd64-image save-arm64v8-image
 
 .PHONY: save-amd64-image
 save-amd64-image: $(IMAGE_AMD64_TARBALL)
@@ -132,12 +115,6 @@ save-arm64v8-image: $(IMAGE_ARM64V8_TARBALL)
 
 $(IMAGE_ARM64V8_TARBALL): $(IMAGE_ARM64V8_DOCKERFILE)
 	$(call save_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm64v8,$@)
-
-.PHONY: save-arm32v7-image
-save-arm32v7-image: $(IMAGE_ARM32V7_TARBALL)
-
-$(IMAGE_ARM32V7_TARBALL): $(IMAGE_ARM32V7_DOCKERFILE)
-	$(call save_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm32v7,$@)
 
 ##################################################
 ## "load-*" targets
@@ -157,7 +134,7 @@ load-native-image:
 	$(call tag_image,$(IMAGE_NAME):$(IMAGE_VERSION),$(IMAGE_NAME):latest)
 
 .PHONY: load-cross-images
-load-cross-images: load-amd64-image load-arm64v8-image load-arm32v7-image
+load-cross-images: load-amd64-image load-arm64v8-image
 
 .PHONY: load-amd64-image
 load-amd64-image:
@@ -169,11 +146,6 @@ load-arm64v8-image:
 	$(call load_image,$(IMAGE_ARM64V8_TARBALL))
 	$(call tag_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm64v8,$(IMAGE_NAME):latest-arm64v8)
 
-.PHONY: load-arm32v7-image
-load-arm32v7-image:
-	$(call load_image,$(IMAGE_ARM32V7_TARBALL))
-	$(call tag_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm32v7,$(IMAGE_NAME):latest-arm32v7)
-
 ##################################################
 ## "push-*" targets
 ##################################################
@@ -183,10 +155,9 @@ define push_image
 endef
 
 define push_cross_manifest
-	'$(DOCKER)' manifest create --amend '$(1)' '$(2)-amd64' '$(2)-arm64v8' '$(2)-arm32v7'
+	'$(DOCKER)' manifest create --amend '$(1)' '$(2)-amd64' '$(2)-arm64v8'
 	'$(DOCKER)' manifest annotate '$(1)' '$(2)-amd64' --os linux --arch amd64
 	'$(DOCKER)' manifest annotate '$(1)' '$(2)-arm64v8' --os linux --arch arm64 --variant v8
-	'$(DOCKER)' manifest annotate '$(1)' '$(2)-arm32v7' --os linux --arch arm --variant v7
 	'$(DOCKER)' manifest push --purge '$(1)'
 endef
 
@@ -195,7 +166,7 @@ push-native-image:
 	@printf '%s\n' 'Unimplemented'
 
 .PHONY: push-cross-images
-push-cross-images: push-amd64-image push-arm64v8-image push-arm32v7-image
+push-cross-images: push-amd64-image push-arm64v8-image
 
 .PHONY: push-amd64-image
 push-amd64-image:
@@ -206,11 +177,6 @@ push-amd64-image:
 push-arm64v8-image:
 	$(call push_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm64v8)
 	$(call push_image,$(IMAGE_NAME):latest-arm64v8)
-
-.PHONY: push-arm32v7-image
-push-arm32v7-image:
-	$(call push_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm32v7)
-	$(call push_image,$(IMAGE_NAME):latest-arm32v7)
 
 push-cross-manifest:
 	$(call push_cross_manifest,$(IMAGE_NAME):$(IMAGE_VERSION),$(IMAGE_NAME):$(IMAGE_VERSION))
@@ -246,6 +212,6 @@ version:
 
 .PHONY: clean
 clean:
-	rm -f '$(IMAGE_NATIVE_DOCKERFILE)' '$(IMAGE_AMD64_DOCKERFILE)' '$(IMAGE_ARM64V8_DOCKERFILE)' '$(IMAGE_ARM32V7_DOCKERFILE)'
-	rm -f '$(IMAGE_NATIVE_TARBALL)' '$(IMAGE_AMD64_TARBALL)' '$(IMAGE_ARM64V8_TARBALL)' '$(IMAGE_ARM32V7_TARBALL)'
+	rm -f '$(IMAGE_NATIVE_DOCKERFILE)' '$(IMAGE_AMD64_DOCKERFILE)' '$(IMAGE_ARM64V8_DOCKERFILE)'
+	rm -f '$(IMAGE_NATIVE_TARBALL)' '$(IMAGE_AMD64_TARBALL)' '$(IMAGE_ARM64V8_TARBALL)'
 	if [ -d '$(DISTDIR)' ] && [ -z "$$(ls -A '$(DISTDIR)')" ]; then rmdir '$(DISTDIR)'; fi
