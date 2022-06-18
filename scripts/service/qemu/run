@@ -5,7 +5,7 @@ set -eu
 set --
 set -- "$@" -machine pc -smp "${VM_CPU:?}" -m "${VM_RAM:?}"
 set -- "$@" -device cirrus-vga -display vnc=:0 -serial stdio -monitor unix:/run/qemu-monitor,server,nowait
-set -- "$@" -device rtl8139,netdev=n0 -netdev user,id=n0,"${VM_NET_GUESTFWD_OPTIONS?}","${VM_NET_HOSTFWD_OPTIONS?}","${VM_NET_EXTRA_OPTIONS?}"
+set -- "$@" -device rtl8139,netdev=n0 -netdev user,id=n0,ipv4=on,ipv6=off,net=10.0.2.0/24,host=10.0.2.2,dns=10.0.2.3,dhcpstart=10.0.2.15,hostfwd=tcp::2323-:23,hostfwd=tcp::5151-:51,hostfwd=tcp::3389-:3389,"${VM_NET_EXTRA_OPTIONS?}"
 set -- "$@" -device ide-hd,id=disk0,bus=ide.0,drive=disk0 -blockdev driver=qcow2,node-name=disk0,file.driver=file,file.filename=/var/lib/qemu/disk/win2000.qcow2
 set -- "$@" -usb -device usb-tablet
 set -- "$@" -k "${VM_KEYBOARD:?}"

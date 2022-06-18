@@ -37,7 +37,7 @@ copy "D:\VALUEADD\3RDPARTY\nc.exe" "%SystemRoot%\system32\nc.exe"
 
 :: Map SMB drive to Z:
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z"
-"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v RemotePath /t REG_SZ /d "\\10.0.2.254\share" /f
+"%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v RemotePath /t REG_SZ /d "\\10.0.2.2\share" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v ProviderName /t REG_SZ /d "Microsoft Windows Network" /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v ProviderType /t REG_DWORD /d 131072 /f
 "%ProgramFiles%\Support Tools\reg.exe" add "HKEY_CURRENT_USER\Network\Z" /v ConnectionType /t REG_DWORD /d 1 /f

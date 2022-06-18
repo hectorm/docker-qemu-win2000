@@ -71,7 +71,7 @@ RUN mkisofs -no-emul-boot -iso-level 4 -eltorito-boot '[BOOT]/Boot-NoEmul.img' -
 	&& timeout 5400 qemu-system-x86_64 \
 		-machine pc -smp 2 -m 512M -accel tcg \
 		-device cirrus-vga -display none -serial stdio \
-		-device rtl8139,netdev=n0 -netdev user,id=n0,restrict=on \
+		-device rtl8139,netdev=n0 -netdev user,id=n0,ipv4=on,ipv6=off,net=10.0.2.0/24,host=10.0.2.2,dns=10.0.2.3,dhcpstart=10.0.2.15,restrict=on \
 		-device ide-hd,id=disk0,bus=ide.0,drive=disk0 -blockdev driver=qcow2,node-name=disk0,file.driver=file,file.filename=/tmp/win2000.qcow2 \
 		-device ide-cd,id=cd0,bus=ide.1,drive=cd0 -blockdev driver=raw,node-name=cd0,file.driver=file,file.filename=/tmp/win2000.iso,read-only=on \
 		-boot order=cd,menu=off \
@@ -104,8 +104,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ENV VM_CPU=2
 ENV VM_RAM=512M
 ENV VM_KEYBOARD=en-us
-ENV VM_NET_GUESTFWD_OPTIONS=guestfwd=tcp:10.0.2.254:445-cmd:"nc 127.0.0.1 445"
-ENV VM_NET_HOSTFWD_OPTIONS=hostfwd=tcp::2323-:23,hostfwd=tcp::5151-:51,hostfwd=tcp::3389-:3389
 ENV VM_NET_EXTRA_OPTIONS=
 ENV VM_KVM=true
 ENV SVDIR=/etc/service/
