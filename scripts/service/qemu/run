@@ -16,17 +16,24 @@ else
 	set -- "$@" -accel tcg
 fi
 
-cd_i=0
+disk_i=1
+for disk in /var/lib/qemu/disk/*.qcow2 /var/lib/qemu/disk/*.qcow2c; do
+	{ [ -f "${disk:?}" ] && [ "${disk:?}" = "${disk%/win2000.qcow2}" ]; } || continue
+	set -- "$@" -device ide-hd,id=disk"${disk_i:?}",bus=ide.$((disk_i / 2)),drive=disk"${disk_i:?}" -blockdev driver=qcow2,node-name=disk"${disk_i:?}",file.driver=file,file.filename="${disk:?}"
+	disk_i="$((disk_i + 1))"
+done
+
+cd_i="${disk_i:?}"
 for cd in /var/lib/qemu/cd/*; do
 	[ -f "${cd:?}" ] || continue
-	set -- "$@" -device ide-cd,id=cd"${cd_i:?}",bus=ide.1,drive=cd"${cd_i:?}" -blockdev driver=raw,node-name=cd"${cd_i:?}",file.driver=file,file.filename="${cd:?}",read-only=on
+	set -- "$@" -device ide-cd,id=cd"${cd_i:?}",bus=ide.$((cd_i / 2)),drive=cd"${cd_i:?}" -blockdev driver=raw,node-name=cd"${cd_i:?}",file.driver=file,file.filename="${cd:?}",read-only=on
 	cd_i="$((cd_i + 1))"
 done
 
 floppy_i=0
 for floppy in /var/lib/qemu/floppy/*; do
 	[ -f "${floppy:?}" ] || continue
-	set -- "$@" -device floppy,id=floppy"${floppy_i:?}",bus=floppy-bus.0,drive=floppy"${floppy_i:?}" -blockdev driver=raw,node-name=floppy"${floppy_i:?}",file.driver=file,file.filename="${floppy:?}",read-only=on
+	set -- "$@" -device floppy,id=floppy"${floppy_i:?}",bus=floppy-bus.$((floppy_i / 2)),drive=floppy"${floppy_i:?}" -blockdev driver=raw,node-name=floppy"${floppy_i:?}",file.driver=file,file.filename="${floppy:?}",read-only=on
 	floppy_i="$((floppy_i + 1))"
 done
 
