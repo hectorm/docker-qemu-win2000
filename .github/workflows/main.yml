@@ -14,7 +14,7 @@ jobs:
 
   build-common-stages:
     name: 'Build common stages'
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
     strategy:
@@ -39,7 +39,7 @@ jobs:
   build:
     name: 'Build ${{ matrix.arch }} image'
     needs: ['build-common-stages']
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
     strategy:
@@ -78,7 +78,7 @@ jobs:
     name: 'Push ${{ matrix.arch }} image'
     if: "startsWith(github.ref, 'refs/tags/v')"
     needs: ['build']
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
     strategy:
@@ -106,7 +106,7 @@ jobs:
     name: 'Push manifest'
     if: "startsWith(github.ref, 'refs/tags/v')"
     needs: ['push']
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
     steps:
@@ -126,7 +126,7 @@ jobs:
     name: 'Create GitHub release'
     if: "startsWith(github.ref, 'refs/tags/v')"
     needs: ['push-manifest']
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-latest'
     permissions:
       contents: 'write'
     steps:
