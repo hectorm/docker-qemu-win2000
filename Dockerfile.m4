@@ -88,6 +88,7 @@ m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest
 RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
+		catatonit \
 		net-tools \
 		netcat-openbsd \
 		procps \
@@ -97,7 +98,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		rlwrap \
 		runit \
 		samba \
-		tini \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Environment
@@ -132,7 +132,7 @@ COPY --chown=root:root ./scripts/bin/ /usr/local/bin/
 RUN find /usr/local/bin/ -type d -not -perm 0755 -exec chmod 0755 '{}' ';'
 RUN find /usr/local/bin/ -type f -not -perm 0755 -exec chmod 0755 '{}' ';'
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/container-init"]
+ENTRYPOINT ["/usr/bin/catatonit", "--", "/usr/local/bin/container-init"]
 
 ##################################################
 ## "test" stage
