@@ -22,9 +22,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Download noVNC
-ARG NOVNC_VERSION=v1.3.0
+ARG NOVNC_VERSION=v1.4.0
 ARG NOVNC_TARBALL_URL=https://github.com/novnc/noVNC/archive/${NOVNC_VERSION}.tar.gz
-ARG NOVNC_TARBALL_CHECKSUM=ee8f91514c9ce9f4054d132f5f97167ee87d9faa6630379267e569d789290336
+ARG NOVNC_TARBALL_CHECKSUM=89b0354c94ad0b0c88092ec7a08e28086d3ed572f13660bac28d5470faaae9c1
 RUN curl -Lo /tmp/novnc.tgz "${NOVNC_TARBALL_URL:?}"
 RUN printf '%s' "${NOVNC_TARBALL_CHECKSUM:?}  /tmp/novnc.tgz" | sha256sum -c
 RUN mkdir /tmp/novnc/ && tar -xzf /tmp/novnc.tgz --strip-components=1 -C /tmp/novnc/
