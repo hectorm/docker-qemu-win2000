@@ -2,4 +2,4 @@
 
 set -eu
 
-printf '%s\n' 'system_powerdown' | nc -U /run/qemu-monitor
+printf '%s\n' 'system_powerdown' | nc -w 1 -U /run/qemu-monitor
