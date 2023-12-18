@@ -30,7 +30,7 @@ jobs:
             IMAGE_BUILD_OPTS="--pull --target ${{ matrix.stage }} --build-arg BUILDKIT_INLINE_CACHE=1" \
             build-native-image save-native-image
       - name: 'Upload artifacts'
-        uses: 'actions/upload-artifact@v3'
+        uses: 'actions/upload-artifact@v4'
         with:
           name: 'dist-common-stages'
           path: './dist/'
@@ -68,7 +68,7 @@ jobs:
             "build-${{ matrix.arch }}-image" "save-${{ matrix.arch }}-image"
       - name: 'Upload artifacts'
         if: "startsWith(github.ref, 'refs/tags/v') && matrix.arch != 'native'"
-        uses: 'actions/upload-artifact@v3'
+        uses: 'actions/upload-artifact@v4'
         with:
           name: 'dist-${{ matrix.arch }}'
           path: './dist/'
