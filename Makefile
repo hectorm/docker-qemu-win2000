@@ -14,9 +14,14 @@ IMAGE_REGISTRY := docker.io
 IMAGE_NAMESPACE := hectorm
 IMAGE_PROJECT := qemu-win2000
 IMAGE_NAME := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE_PROJECT)
-IMAGE_GIT_TAG := $(shell '$(GIT)' tag -l --contains HEAD 2>/dev/null)
-IMAGE_GIT_SHA := $(shell '$(GIT)' rev-parse HEAD 2>/dev/null)
-IMAGE_VERSION := $(if $(IMAGE_GIT_TAG),$(IMAGE_GIT_TAG),$(if $(IMAGE_GIT_SHA),$(IMAGE_GIT_SHA),nil))
+ifeq ($(shell '$(GIT)' status --porcelain 2>/dev/null),)
+	IMAGE_GIT_TAG := $(shell '$(GIT)' tag --list --contains HEAD 2>/dev/null)
+	IMAGE_GIT_SHA := $(shell '$(GIT)' rev-parse --verify --short HEAD 2>/dev/null)
+	IMAGE_VERSION := $(if $(IMAGE_GIT_TAG),$(IMAGE_GIT_TAG),$(if $(IMAGE_GIT_SHA),$(IMAGE_GIT_SHA),nil))
+else
+	IMAGE_GIT_BRANCH := $(shell '$(GIT)' symbolic-ref --short HEAD 2>/dev/null)
+	IMAGE_VERSION := $(if $(IMAGE_GIT_BRANCH),$(IMAGE_GIT_BRANCH)-dirty,nil)
+endif
 
 IMAGE_BUILD_OPTS :=
 
