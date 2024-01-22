@@ -195,7 +195,7 @@ push-cross-manifest:
 
 .PHONY: binfmt-register
 binfmt-register:
-	'$(DOCKER)' run --rm --privileged docker.io/hectorm/qemu-user-static:latest --reset --persistent yes
+	'$(DOCKER)' run --rm --privileged docker.io/hectorm/qemu-user-static:latest --reset --persistent yes --credential yes
 
 ##################################################
 ## "version" target
