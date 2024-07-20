@@ -4,7 +4,7 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-FROM --platform=${BUILDPLATFORM} docker.io/ubuntu:22.04 AS build
+FROM --platform=${BUILDPLATFORM} docker.io/ubuntu:24.04 AS build
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
