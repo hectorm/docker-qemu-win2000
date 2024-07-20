@@ -70,7 +70,6 @@ $(IMAGE_AMD64_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 	'$(M4)' \
 		--prefix-builtins \
 		--define=CROSS_ARCH=amd64 \
-		--define=CROSS_QEMU=/usr/bin/qemu-x86_64-static \
 		'$(DOCKERFILE_TEMPLATE)' > '$@'
 	'$(DOCKER)' build $(IMAGE_BUILD_OPTS) \
 		--tag '$(IMAGE_NAME):$(IMAGE_VERSION)-amd64' \
@@ -86,7 +85,6 @@ $(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 	'$(M4)' \
 		--prefix-builtins \
 		--define=CROSS_ARCH=arm64v8 \
-		--define=CROSS_QEMU=/usr/bin/qemu-aarch64-static \
 		'$(DOCKERFILE_TEMPLATE)' > '$@'
 	'$(DOCKER)' build $(IMAGE_BUILD_OPTS) \
 		--tag '$(IMAGE_NAME):$(IMAGE_VERSION)-arm64v8' \
