@@ -1,138 +1,138 @@
-name: 'Main'
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Main"
 
 on:
   push:
-    tags: ['*']
-    branches: ['*']
+    tags: ["*"]
+    branches: ["*"]
   pull_request:
-    branches: ['*']
+    branches: ["*"]
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
-
   build-common-stages:
-    name: 'Build common stages'
-    runs-on: 'ubuntu-latest'
+    name: "Build common stages"
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'read'
+      contents: "read"
     strategy:
       matrix:
-        stage: ['build']
+        stage: ["build"]
     steps:
-      - name: 'Checkout project'
-        uses: 'actions/checkout@v4'
-      - name: 'Build and save image'
+      - name: "Checkout project"
+        uses: "actions/checkout@v4"
+      - name: "Build and save image"
         run: |
           make \
             IMAGE_REGISTRY="localhost" IMAGE_NAMESPACE="stage" IMAGE_PROJECT="${{ matrix.stage }}" \
             IMAGE_BUILD_OPTS="--pull --target ${{ matrix.stage }} --build-arg BUILDKIT_INLINE_CACHE=1" \
             build-native-image save-native-image
-      - name: 'Upload artifacts'
-        uses: 'actions/upload-artifact@v4'
+      - name: "Upload artifacts"
+        uses: "actions/upload-artifact@v4"
         with:
-          name: 'dist-common-stages'
-          path: './dist/'
+          name: "dist-common-stages"
+          path: "./dist/"
           retention-days: 1
 
   build:
-    name: 'Build ${{ matrix.arch }} image'
-    needs: ['build-common-stages']
-    runs-on: 'ubuntu-latest'
+    name: "Build ${{ matrix.arch }} image"
+    needs: ["build-common-stages"]
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'read'
+      contents: "read"
     strategy:
       matrix:
-        arch: ['native', 'amd64', 'arm64v8']
+        arch: ["native", "amd64", "arm64v8"]
     steps:
-      - name: 'Checkout project'
-        uses: 'actions/checkout@v4'
-      - name: 'Download artifacts'
-        uses: 'actions/download-artifact@v4'
+      - name: "Checkout project"
+        uses: "actions/checkout@v4"
+      - name: "Download artifacts"
+        uses: "actions/download-artifact@v4"
         with:
-          name: 'dist-common-stages'
-          path: './dist/'
-      - name: 'Load common stages'
+          name: "dist-common-stages"
+          path: "./dist/"
+      - name: "Load common stages"
         run: |
           docker system prune --all --force
           make IMAGE_REGISTRY="localhost" IMAGE_NAMESPACE="stage" IMAGE_PROJECT="build" load-native-image clean
-      - name: 'Register binfmt entries'
+      - name: "Register binfmt entries"
         if: "matrix.arch != 'native'"
         run: |
           make binfmt-register
-      - name: 'Build and save image'
+      - name: "Build and save image"
         run: |
           make \
             IMAGE_BUILD_OPTS="--cache-from localhost/stage/build:latest" \
             "build-${{ matrix.arch }}-image" "save-${{ matrix.arch }}-image"
-      - name: 'Upload artifacts'
+      - name: "Upload artifacts"
         if: "startsWith(github.ref, 'refs/tags/v') && matrix.arch != 'native'"
-        uses: 'actions/upload-artifact@v4'
+        uses: "actions/upload-artifact@v4"
         with:
-          name: 'dist-${{ matrix.arch }}'
-          path: './dist/'
+          name: "dist-${{ matrix.arch }}"
+          path: "./dist/"
           retention-days: 1
 
   push:
-    name: 'Push ${{ matrix.arch }} image'
+    name: "Push ${{ matrix.arch }} image"
     if: "startsWith(github.ref, 'refs/tags/v')"
-    needs: ['build']
-    runs-on: 'ubuntu-latest'
+    needs: ["build"]
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'read'
+      contents: "read"
     strategy:
       matrix:
-        arch: ['amd64', 'arm64v8']
+        arch: ["amd64", "arm64v8"]
     steps:
-      - name: 'Checkout project'
-        uses: 'actions/checkout@v4'
-      - name: 'Download artifacts'
-        uses: 'actions/download-artifact@v4'
+      - name: "Checkout project"
+        uses: "actions/checkout@v4"
+      - name: "Download artifacts"
+        uses: "actions/download-artifact@v4"
         with:
-          name: 'dist-${{ matrix.arch }}'
-          path: './dist/'
-      - name: 'Login to Docker Hub'
-        uses: 'docker/login-action@v3'
+          name: "dist-${{ matrix.arch }}"
+          path: "./dist/"
+      - name: "Login to Docker Hub"
+        uses: "docker/login-action@v3"
         with:
-          registry: 'docker.io'
-          username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_TOKEN }}'
-      - name: 'Load and push image'
+          registry: "docker.io"
+          username: "${{ secrets.DOCKERHUB_USERNAME }}"
+          password: "${{ secrets.DOCKERHUB_TOKEN }}"
+      - name: "Load and push image"
         run: |
           make "load-${{ matrix.arch }}-image" "push-${{ matrix.arch }}-image"
 
   push-manifest:
-    name: 'Push manifest'
+    name: "Push manifest"
     if: "startsWith(github.ref, 'refs/tags/v')"
-    needs: ['push']
-    runs-on: 'ubuntu-latest'
+    needs: ["push"]
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'read'
+      contents: "read"
     steps:
-      - name: 'Checkout project'
-        uses: 'actions/checkout@v4'
-      - name: 'Login to Docker Hub'
-        uses: 'docker/login-action@v3'
+      - name: "Checkout project"
+        uses: "actions/checkout@v4"
+      - name: "Login to Docker Hub"
+        uses: "docker/login-action@v3"
         with:
-          registry: 'docker.io'
-          username: '${{ secrets.DOCKERHUB_USERNAME }}'
-          password: '${{ secrets.DOCKERHUB_TOKEN }}'
-      - name: 'Push manifest'
+          registry: "docker.io"
+          username: "${{ secrets.DOCKERHUB_USERNAME }}"
+          password: "${{ secrets.DOCKERHUB_TOKEN }}"
+      - name: "Push manifest"
         run: |
           make push-cross-manifest
 
   release-github:
-    name: 'Create GitHub release'
+    name: "Create GitHub release"
     if: "startsWith(github.ref, 'refs/tags/v')"
-    needs: ['push-manifest']
-    runs-on: 'ubuntu-latest'
+    needs: ["push-manifest"]
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'write'
+      contents: "write"
     steps:
-      - name: 'Create release'
+      - name: "Create release"
         env:
-          GITHUB_PAT: '${{ secrets.GITHUB_TOKEN }}'
+          GITHUB_PAT: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           RELEASE_STATUS="$(curl -fs --proto '=https' --tlsv1.3 --globoff \
             --url "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases/tags/${GITHUB_REF_NAME:?}" \

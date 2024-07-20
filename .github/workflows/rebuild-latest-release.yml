@@ -1,23 +1,23 @@
-name: 'Rebuild latest release'
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "Rebuild latest release"
 
 on:
   schedule:
-    - cron: '20 04 * * 1'
+    - cron: "20 04 * * 1"
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
-
   trigger-rebuild:
-    name: 'Trigger rebuild'
-    runs-on: 'ubuntu-latest'
+    name: "Trigger rebuild"
+    runs-on: "ubuntu-latest"
     permissions:
-      contents: 'read'
+      contents: "read"
     steps:
-      - name: 'REST API call'
+      - name: "REST API call"
         env:
-          GITHUB_PAT: '${{ secrets.PERSONAL_GITHUB_TOKEN }}'
+          GITHUB_PAT: "${{ secrets.PERSONAL_GITHUB_TOKEN }}"
         run: |
           RELEASE_TAG="$(curl -fsS --proto '=https' --tlsv1.3 --globoff \
               --url "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases/latest" \
