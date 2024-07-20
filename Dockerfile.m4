@@ -30,9 +30,9 @@ RUN printf '%s' "${NOVNC_TARBALL_CHECKSUM:?}  /tmp/novnc.tgz" | sha256sum -c
 RUN mkdir /tmp/novnc/ && tar -xzf /tmp/novnc.tgz --strip-components=1 -C /tmp/novnc/
 
 # Download Websockify
-ARG WEBSOCKIFY_VERSION=v0.11.0
+ARG WEBSOCKIFY_VERSION=v0.12.0
 ARG WEBSOCKIFY_TARBALL_URL=https://github.com/novnc/websockify/archive/${WEBSOCKIFY_VERSION}.tar.gz
-ARG WEBSOCKIFY_TARBALL_CHECKSUM=628dd586e80865cd775cc402b96cf75f4daa647b0fefdc31366d08b7753016be
+ARG WEBSOCKIFY_TARBALL_CHECKSUM=37448ec992ef626f29558404cf6535592d02894ec1d5f0990a8c62621b39a967
 RUN curl -Lo /tmp/websockify.tgz "${WEBSOCKIFY_TARBALL_URL:?}"
 RUN printf '%s' "${WEBSOCKIFY_TARBALL_CHECKSUM:?}  /tmp/websockify.tgz" | sha256sum -c
 RUN mkdir /tmp/websockify/ && tar -xzf /tmp/websockify.tgz --strip-components=1 -C /tmp/websockify/
