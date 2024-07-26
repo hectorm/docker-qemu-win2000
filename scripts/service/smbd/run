@@ -2,6 +2,10 @@
 
 set -eu
 
+if [ ! -d /run/samba/ ]; then
+	install -m 755 -o root -g root -d /run/samba/
+fi
+
 cd /run/samba/
 exec 2>&1
 exec /usr/sbin/smbd --foreground --debug-stdout --debuglevel=3
