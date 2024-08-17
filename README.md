@@ -15,6 +15,9 @@ docker run --detach \
   docker.io/hectorm/qemu-win2000:latest
 ```
 
+> [!NOTE]
+> The `--device /dev/kvm` option can only be used on Linux hosts, it can be removed on Windows and macOS hosts at a significant performance penalty.
+
 The instance can be accessed from:
  * **RDP** (`3389/TCP`), user `Administrator`, password `password`.
  * **VNC** (`5900/TCP`), without password.
