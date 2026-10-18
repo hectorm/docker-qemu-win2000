@@ -4,4 +4,4 @@ set -eu
 
 cd /opt/novnc/utils/websockify/
 exec 2>&1
-exec /usr/bin/python3 -m websockify --web /opt/novnc/ 6080 127.0.0.1:5900
+exec /usr/bin/python3 -W "ignore:no 'numpy' module" -m websockify --web /opt/novnc/ 6080 127.0.0.1:5900
