@@ -11,6 +11,7 @@ trap 'exit 0' TERM INT HUP
 
 if [ "$#" -gt 0 ] || [ -t 0 ] || [ -t 1 ]; then
 	runsvdir -P "${SVDIR:?}" >/dev/null 2>&1 & RUNSVDIRPID=$!
+	[ "$#" -gt 0 ] || set -- vmshell
 	"$@"
 else
 	runsvdir -P "${SVDIR:?}" & RUNSVDIRPID=$!
