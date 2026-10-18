@@ -165,9 +165,11 @@ RUN <<-EOF
 	if [ "${BUILDARCH:?}" = "${TARGETARCH:?}" ]; then
 		container-init &
 		printf '%s\n' 'The quick brown fox jumps over the lazy dog' > /mnt/in || exit 1
-		printf '%s\n' '@echo off & for /l %n in () do if exist Z:\in exit' | timeout 900 vmshell || exit 1
-		printf '%s\n' '@echo off & copy Z:\in Z:\out & exit' | timeout 120 vmshell || exit 1
-		cmp -s /mnt/in /mnt/out || exit 1
+		i=0; until cmp -s /mnt/in /mnt/out; do
+			[ "$((i += 1))" -le 180 ] || exit 1
+			printf '%s\n' '@echo off & if exist Z:\in copy Z:\in Z:\out & exit' | timeout 120 vmshell ||:
+			sleep 5
+		done
 	fi
 EOF
 
