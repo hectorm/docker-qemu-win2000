@@ -3,10 +3,11 @@
 set -eu
 
 stop() {
-	for s in "${SVDIR:?}"/*; do sv force-stop "${s:?}" >/dev/null 2>&1; done
-	kill -HUP "${RUNSVDIRPID:?}"; wait "${RUNSVDIRPID:?}"
+	for s in "${SVDIR:?}"/*; do sv force-stop "${s:?}" >/dev/null 2>&1 ||:; done
+	kill -HUP "${RUNSVDIRPID:?}" ||:; wait "${RUNSVDIRPID:?}" ||:
 }
-trap stop EXIT TERM INT HUP
+trap stop EXIT
+trap 'exit 0' TERM INT HUP
 
 if [ "$#" -gt 0 ] || [ -t 0 ] || [ -t 1 ]; then
 	runsvdir -P "${SVDIR:?}" >/dev/null 2>&1 & RUNSVDIRPID=$!
