@@ -37,7 +37,7 @@ for floppy in /var/lib/qemu/floppy/*; do
 	floppy_i="$((floppy_i + 1))"
 done
 
-if [ "${cd_i:?}" -gt 0 ]; then
+if [ "${cd_i:?}" -gt "${disk_i:?}" ]; then
 	set -- "$@" -boot order=dc,menu=on,splash-time=5000
 fi
 
