@@ -8,6 +8,7 @@ A Docker image for Windows 2000 Advanced Server with SP4.
 ```sh
 docker run --detach \
   --name qemu-win2000 \
+  --stop-timeout 30 \
   --device /dev/kvm \
   --publish 127.0.0.1:3389:3389/tcp \
   --publish 127.0.0.1:5900:5900/tcp \

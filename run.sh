@@ -36,6 +36,7 @@ printf '%s\n' "Creating \"${CONTAINER_NAME:?}\" container..."
 	--name "${CONTAINER_NAME:?}" \
 	--hostname "${CONTAINER_NAME:?}" \
 	--restart on-failure:3 \
+	--stop-timeout 30 \
 	--log-opt max-size=32m \
 	--device /dev/kvm \
 	--publish 127.0.0.1:2323:2323/tcp \
