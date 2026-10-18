@@ -9,13 +9,14 @@ M4 := $(shell command -v m4 2>/dev/null)
 
 DISTDIR := ./dist
 DOCKERFILE_TEMPLATE := ./Dockerfile.m4
+DOCKERFILE_DEPS := $(shell find ./config/ ./data/iso/ ./scripts/ 2>/dev/null)
 
 IMAGE_REGISTRY := docker.io
 IMAGE_NAMESPACE := hectorm
 IMAGE_PROJECT := qemu-win2000
 IMAGE_NAME := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE_PROJECT)
 ifeq ($(shell '$(GIT)' status --porcelain 2>/dev/null),)
-	IMAGE_GIT_TAG := $(shell '$(GIT)' tag --list --contains HEAD 2>/dev/null)
+	IMAGE_GIT_TAG := $(firstword $(shell '$(GIT)' tag --list --points-at HEAD --sort=-version:refname 2>/dev/null))
 	IMAGE_GIT_SHA := $(shell '$(GIT)' rev-parse --verify --short HEAD 2>/dev/null)
 	IMAGE_VERSION := $(if $(IMAGE_GIT_TAG),$(IMAGE_GIT_TAG),$(if $(IMAGE_GIT_SHA),$(IMAGE_GIT_SHA),nil))
 else
@@ -35,6 +36,8 @@ IMAGE_ARM64V8_TARBALL := $(DISTDIR)/$(IMAGE_PROJECT).arm64v8.tzst
 export DOCKER_BUILDKIT := 1
 export BUILDKIT_PROGRESS := plain
 
+.DELETE_ON_ERROR:
+
 ##################################################
 ## "all" target
 ##################################################
@@ -49,7 +52,7 @@ all: save-native-image
 .PHONY: build-native-image
 build-native-image: $(IMAGE_NATIVE_DOCKERFILE)
 
-$(IMAGE_NATIVE_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
+$(IMAGE_NATIVE_DOCKERFILE): $(DOCKERFILE_TEMPLATE) $(DOCKERFILE_DEPS)
 	mkdir -p '$(DISTDIR)'
 	'$(M4)' \
 		--prefix-builtins \
@@ -65,7 +68,7 @@ build-cross-images: build-amd64-image build-arm64v8-image
 .PHONY: build-amd64-image
 build-amd64-image: $(IMAGE_AMD64_DOCKERFILE)
 
-$(IMAGE_AMD64_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
+$(IMAGE_AMD64_DOCKERFILE): $(DOCKERFILE_TEMPLATE) $(DOCKERFILE_DEPS)
 	mkdir -p '$(DISTDIR)'
 	'$(M4)' \
 		--prefix-builtins \
@@ -80,7 +83,7 @@ $(IMAGE_AMD64_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 .PHONY: build-arm64v8-image
 build-arm64v8-image: $(IMAGE_ARM64V8_DOCKERFILE)
 
-$(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
+$(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE) $(DOCKERFILE_DEPS)
 	mkdir -p '$(DISTDIR)'
 	'$(M4)' \
 		--prefix-builtins \
@@ -97,7 +100,7 @@ $(IMAGE_ARM64V8_DOCKERFILE): $(DOCKERFILE_TEMPLATE)
 ##################################################
 
 define save_image
-	'$(DOCKER)' save '$(1)' | zstd -T0 > '$(2)'
+	s=$$( { { '$(DOCKER)' save '$(1)' && printf 'ok' >&3; } | zstd -T0 > '$(2)'; } 3>&1 ); [ "$${s:?}" = 'ok' ]
 endef
 
 .PHONY: save-native-image
@@ -160,10 +163,7 @@ define push_image
 endef
 
 define push_cross_manifest
-	'$(DOCKER)' manifest create --amend '$(1)' '$(2)-amd64' '$(2)-arm64v8'
-	'$(DOCKER)' manifest annotate '$(1)' '$(2)-amd64' --os linux --arch amd64
-	'$(DOCKER)' manifest annotate '$(1)' '$(2)-arm64v8' --os linux --arch arm64 --variant v8
-	'$(DOCKER)' manifest push --purge '$(1)'
+	'$(DOCKER)' buildx imagetools create --tag '$(1)' '$(2)-amd64' '$(2)-arm64v8'
 endef
 
 .PHONY: push-native-image
@@ -183,6 +183,7 @@ push-arm64v8-image:
 	$(call push_image,$(IMAGE_NAME):$(IMAGE_VERSION)-arm64v8)
 	$(call push_image,$(IMAGE_NAME):latest-arm64v8)
 
+.PHONY: push-cross-manifest
 push-cross-manifest:
 	$(call push_cross_manifest,$(IMAGE_NAME):$(IMAGE_VERSION),$(IMAGE_NAME):$(IMAGE_VERSION))
 	$(call push_cross_manifest,$(IMAGE_NAME):latest,$(IMAGE_NAME):latest)
