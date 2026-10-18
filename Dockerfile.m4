@@ -7,7 +7,7 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-FROM --platform=linux/amd64 docker.io/ubuntu:24.04 AS build
+FROM --platform=linux/amd64 docker.io/ubuntu:26.04 AS build
 
 SHELL ["/bin/sh", "-euc"]
 
@@ -16,13 +16,13 @@ RUN <<-EOF
 	export DEBIAN_FRONTEND=noninteractive
 	apt-get update
 	apt-get install -y --no-install-recommends \
+		7zip \
 		binutils-mingw-w64-i686 \
 		ca-certificates \
 		curl \
 		gcc-mingw-w64-i686 \
 		genisoimage \
 		make \
-		p7zip-full \
 		qemu-system-x86 \
 		qemu-utils
 	rm -rf /var/lib/apt/lists/*
@@ -102,7 +102,7 @@ EOF
 ## "base" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:24.04]], [[FROM docker.io/ubuntu:24.04]]) AS base
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:26.04]], [[FROM docker.io/ubuntu:26.04]]) AS base
 
 SHELL ["/bin/sh", "-euc"]
 
