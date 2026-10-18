@@ -10,7 +10,7 @@ set -- "$@" -device ide-hd,id=disk0,bus=ide.0,drive=disk0 -blockdev driver=qcow2
 set -- "$@" -usb -device usb-tablet
 set -- "$@" -k "${VM_KEYBOARD:?}"
 
-if [ "${VM_KVM:?}" = true ] && [ -c /dev/kvm ]; then
+if [ "${VM_KVM:?}" = true ] && [ -c /dev/kvm ] && [ "$(uname -m)" = x86_64 ]; then
 	set -- "$@" -accel kvm -cpu host
 else
 	set -- "$@" -accel tcg
