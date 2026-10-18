@@ -8,9 +8,9 @@ RDP_PORT=3389
 RDP_USER=Administrator
 RDP_PASSWORD=password
 
-exec xfreerdp \
+exec xfreerdp3 \
 	/v:"${RDP_HOST:?}":"${RDP_PORT:?}" \
 	/u:"${RDP_USER:?}" /p:"${RDP_PASSWORD:?}" \
 	/log-level:INFO /cert:ignore \
-	/gfx:RFX +gfx-progressive \
+	/gfx:RFX,progressive \
 	+clipboard -compression -encryption
